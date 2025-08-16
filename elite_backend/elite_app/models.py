@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
+from django.utils import timezone
 
 class User(AbstractUser):
     """Custom User model for EliteHands"""
@@ -162,3 +163,21 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message from {self.customer.username} to {self.staff.username} - {self.subject}"
+
+class OTP(models.Model):
+    """One-Time Password for password reset"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='otps')
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+    
+    class Meta:
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f"OTP for {self.user.email} ({'used' if self.is_used else 'active'})"
+    
+    @property
+    def is_expired(self):
+        return timezone.now() > self.expires_at

@@ -119,40 +119,76 @@ class StaffDetailView(APIView):
     """Get, update, and delete staff member (admin only)"""
     permission_classes = [permissions.IsAuthenticated]
     
-    def get(self, request, staff_id):
-        if request.user.user_type != 'admin':
-            return Response({'error': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
-        
-        try:
-            staff = User.objects.get(id=staff_id, user_type__in=['staff', 'admin'])
-            serializer = StaffSerializer(staff)
+    def get(self, request, staff_id=None):
+        """Get staff details or list all staff if no ID provided"""
+        if not request.user.user_type == 'admin':
+            return Response({'error': 'Only admins can view staff details'}, status=status.HTTP_403_FORBIDDEN)
+            
+        if staff_id:
+            try:
+                staff = User.objects.get(id=staff_id, user_type='staff')
+                serializer = StaffSerializer(staff)
+                return Response(serializer.data)
+            except User.DoesNotExist:
+                return Response({'error': 'Staff member not found'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            # If no ID provided, return all staff members
+            staff_members = User.objects.filter(user_type='staff')
+            serializer = StaffSerializer(staff_members, many=True)
             return Response(serializer.data)
-        except User.DoesNotExist:
-            return Response({'error': 'Staff member not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    def post(self, request):
+        """Create a new staff member (admin only)"""
+        if not request.user.user_type == 'admin':
+            return Response({'error': 'Only admins can create staff accounts'}, status=status.HTTP_403_FORBIDDEN)
+            
+        serializer = StaffRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            staff = serializer.save()
+            return Response(
+                {'message': 'Staff created successfully', 'staff': StaffSerializer(staff).data},
+                status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def put(self, request, staff_id):
-        if request.user.user_type != 'admin':
-            return Response({'error': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
-        
+        """Update staff member details (admin only)"""
+        if not request.user.user_type == 'admin':
+            return Response({'error': 'Only admins can update staff accounts'}, status=status.HTTP_403_FORBIDDEN)
+            
         try:
-            staff = User.objects.get(id=staff_id, user_type__in=['staff', 'admin'])
-            serializer = StaffSerializer(staff, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            staff = User.objects.get(id=staff_id, user_type='staff')
         except User.DoesNotExist:
             return Response({'error': 'Staff member not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+        # Don't allow changing username/email via this endpoint
+        if 'username' in request.data or 'email' in request.data:
+            return Response(
+                {'error': 'Cannot change username or email via this endpoint'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        serializer = StaffSerializer(staff, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {'message': 'Staff updated successfully', 'staff': serializer.data},
+                status=status.HTTP_200_OK
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, staff_id):
-        if request.user.user_type != 'admin':
-            return Response({'error': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
-        
+        """Delete a staff member (admin only)"""
+        if not request.user.user_type == 'admin':
+            return Response({'error': 'Only admins can delete staff accounts'}, status=status.HTTP_403_FORBIDDEN)
+            
         try:
-            staff = User.objects.get(id=staff_id, user_type__in=['staff', 'admin'])
-            staff.is_active_staff = False
-            staff.save()
-            return Response({'message': 'Staff member deactivated'}, status=status.HTTP_200_OK)
+            staff = User.objects.get(id=staff_id, user_type='staff')
+            staff.delete()
+            return Response(
+                {'message': 'Staff member deleted successfully'},
+                status=status.HTTP_204_NO_CONTENT
+            )
         except User.DoesNotExist:
             return Response({'error': 'Staff member not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -161,15 +197,19 @@ class StaffStatusView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request, staff_id):
-        if request.user.user_type != 'admin':
-            return Response({'error': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
-        
+        if not request.user.user_type == 'admin':
+            return Response({'error': 'Only admins can update staff status'}, status=status.HTTP_403_FORBIDDEN)
+            
         try:
-            staff = User.objects.get(id=staff_id, user_type__in=['staff', 'admin'])
+            staff = User.objects.get(id=staff_id, user_type='staff')
+            # Toggle the is_active_staff status
             staff.is_active_staff = not staff.is_active_staff
             staff.save()
-            status_text = "activated" if staff.is_active_staff else "deactivated"
-            return Response({'message': f'Staff member {status_text}'}, status=status.HTTP_200_OK)
+            
+            return Response({
+                'message': f"Staff member {'activated' if staff.is_active_staff else 'deactivated'} successfully",
+                'staff': StaffSerializer(staff).data
+            })
         except User.DoesNotExist:
             return Response({'error': 'Staff member not found'}, status=status.HTTP_404_NOT_FOUND)
 

@@ -1,1 +1,1 @@
-# Management commands package 
+# This is an empty file that makes the directory a Python package

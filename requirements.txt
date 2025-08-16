@@ -1,0 +1,42 @@
+# Core
+Django==5.0.11
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+django-rest-framework-simplejwt==5.3.1
+python-dotenv==1.0.0
+Pillow==10.1.0
+
+# Database
+psycopg2-binary==2.9.9
+
+# Email and Authentication
+django-rest-passwordreset==1.3.1
+
+# Real-time Features
+channels==4.0.0
+daphne==4.0.0
+
+# Task Queue
+celery==5.3.6
+redis==5.0.1
+
+# Caching
+django-redis==5.4.0
+python-memcached==1.59
+
+# Storage
+django-storages==1.14.2
+boto3==1.34.69
+
+# Development
+debugpy==1.8.0
+django-debug-toolbar==4.2.0
+pytest==8.0.0
+pytest-django==4.7.0
+
+# Production
+gunicorn==21.2.0
+whitenoise==6.6.0
+
+# Other
+python-dateutil==2.8.2

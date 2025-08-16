@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
 app_name = 'elite_app'
@@ -8,17 +8,10 @@ urlpatterns = [
     path('health/', views.health_check, name='health_check'),
     
     # User authentication
-    path('auth/register/', views.UserRegistrationView.as_view(), name='user_register'),
-    path('auth/staff/register/', views.StaffRegistrationView.as_view(), name='staff_register'),
-    path('auth/login/', views.UserLoginView.as_view(), name='user_login'),
-    path('auth/logout/', views.UserLogoutView.as_view(), name='user_logout'),
-    path('auth/profile/', views.UserProfileView.as_view(), name='user_profile'),
+    path('auth/', include('elite_app.auth_urls')),
     
     # Staff management (admin only)
-    path('staff/', views.StaffListView.as_view(), name='staff_list'),
-    path('staff/assigned/', views.AssignedStaffListView.as_view(), name='assigned_staff'),
-    path('staff/<int:staff_id>/', views.StaffDetailView.as_view(), name='staff_detail'),
-    path('staff/<int:staff_id>/status/', views.StaffStatusView.as_view(), name='staff_status'),
+    path('staff/', include('elite_app.staff_urls')),
     
     # Services
     path('services/categories/', views.ServiceCategoryListView.as_view(), name='service_categories'),
