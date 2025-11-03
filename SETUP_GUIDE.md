@@ -8,6 +8,22 @@ This guide will help you set up the EliteHands project with both the Django back
 - Node.js 16 or higher
 - npm or yarn
 
+## Demo Accounts
+
+Use these demo credentials after setup to log in:
+
+- Customer: customer@elitehands.ca / password123
+- Staff: staff@elitehands.ca / password123
+- Admin: admin@elitehands.ca / password123
+
+To seed or reset these demo users locally:
+
+```bash
+cd elite_backend
+python manage.py migrate
+python manage.py populate_default_data
+```
+
 ## Backend Setup (Django)
 
 ### 1. Navigate to the backend directory
