@@ -24,6 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # API Endpoints
+    path('api/', include('elite_app.urls')),  # Main API endpoints
     path('api/auth/', include('elite_app.auth_urls')),  # Authentication endpoints
     path('api/staff/', include('elite_app.staff_urls')),  # Staff management endpoints
     

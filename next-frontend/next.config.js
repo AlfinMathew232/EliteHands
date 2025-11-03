@@ -1,10 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true,
-  },
   images: {
-    domains: ['localhost', 'elitehands.ca'],
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: 'elitehands.ca',
+      },
+    ],
+    unoptimized: true,
   },
   env: {
     CUSTOM_KEY: 'my-value',

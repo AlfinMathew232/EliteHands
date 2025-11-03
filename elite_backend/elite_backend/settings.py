@@ -27,7 +27,10 @@ SECRET_KEY = 'django-insecure-5rwh7s#%49kt2)popd+q1lqsejy9+im($!19e2u62#2w%qfcjd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+]
 
 
 # Application definition
@@ -147,6 +150,26 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
+# CSRF Settings
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3001',
+]
+
+# Allow cookies to be included in cross-site HTTP requests (local dev)
+# Use SameSite=None for cross-site XHR/fetch from http://localhost:3000 to http://localhost:8000
+CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = 'None'
+
+# In dev over http, keep Secure off; for production over https set these to True
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
+
+CSRF_COOKIE_HTTPONLY = False  # JS access ok for reading token endpoint return
+CSRF_USE_SESSIONS = False
+
 CORS_ALLOWED_HEADERS = [
     'accept',
     'accept-encoding',
@@ -161,12 +184,12 @@ CORS_ALLOWED_HEADERS = [
 
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@elitehands.ca')
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'alfin.24pmc111@mariancollege.org'
+EMAIL_HOST_PASSWORD = 'slqa pnhq zpej vijr'
+DEFAULT_FROM_EMAIL = 'alfin.24pmc111@mariancollege.org'
 
 # Password Reset Settings
 DJANGO_REST_PASSWORDRESET_NO_INFORMATION_LEAKAGE = True
@@ -175,6 +198,8 @@ DJANGO_REST_MULTITOKENAUTH_RESET_TOKEN_EXPIRY = 24  # hours
 # REST Framework Settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
@@ -191,7 +216,15 @@ REST_FRAMEWORK = {
     ],
 }
 
-# JWT Settings
+# Session Settings
+SESSION_COOKIE_AGE = 86400  # 24 hours in seconds
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_HTTPONLY = True
+# Important: allow cross-site cookie for localhost -> API during dev
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_SAVE_EVERY_REQUEST = True  # Update the session expiry on each request
+
+# Keep JWT settings for backward compatibility if needed
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),

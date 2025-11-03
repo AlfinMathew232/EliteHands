@@ -24,6 +24,8 @@ class User(AbstractUser):
     position = models.CharField(max_length=100, blank=True, null=True)  # Staff position
     work_email = models.EmailField(blank=True, null=True)  # Staff work email
     work_phone = models.CharField(max_length=20, blank=True, null=True)  # Staff work phone
+    reset_token = models.CharField(max_length=100, blank=True, null=True)  # For password reset
+    reset_token_expires = models.DateTimeField(blank=True, null=True)  # Token expiration
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -115,6 +117,7 @@ class Review(models.Model):
     provider = models.ForeignKey(User, on_delete=models.CASCADE, related_name='provider_reviews')
     rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     comment = models.TextField()
+    published = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -122,6 +125,33 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review by {self.customer.username} - {self.rating} stars"
+
+class BookingAssignment(models.Model):
+    """Assignment of staff to a booking with a specific role"""
+    ROLE_CHOICES = (
+        ('driver', 'Driver'),
+        ('mover', 'Mover'),
+        ('cleaner', 'Cleaner'),
+        ('packing_specialist', 'Packing Specialist'),
+        ('event_planner', 'Event Planner'),
+        ('event_assistant', 'Event Assistant'),
+        ('logistics', 'Logistics'),
+        ('customer_service', 'Customer Service'),
+        ('manager', 'Manager'),
+    )
+
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='assignments')
+    staff = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assignments')
+    role = models.CharField(max_length=50, choices=ROLE_CHOICES)
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    unassigned_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'booking_assignments'
+        unique_together = ('booking', 'staff')
+
+    def __str__(self):
+        return f"Assignment {self.id} - Booking {self.booking.booking_id} -> {self.staff.username} ({self.role})"
 
 class Notification(models.Model):
     """User notifications"""
@@ -181,3 +211,41 @@ class OTP(models.Model):
     @property
     def is_expired(self):
         return timezone.now() > self.expires_at
+
+class LeaveRequest(models.Model):
+    """Staff leave requests with approval workflow"""
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    )
+
+    staff = models.ForeignKey(User, on_delete=models.CASCADE, related_name='leave_requests')
+    start_date = models.DateField()
+    end_date = models.DateField()
+    reason = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'leave_requests'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"LeaveRequest {self.id} - {self.staff.username} ({self.status})"
+
+class AppSettings(models.Model):
+    """Persisted application-wide settings (singleton)"""
+    site_name = models.CharField(max_length=100, default='EliteHands')
+    contact_email = models.EmailField(blank=True, null=True)
+    contact_phone = models.CharField(max_length=50, blank=True, null=True)
+    address = models.CharField(max_length=255, default='157 Gorge Rd E #402, Victoria, BC V9A 6Y2, Canada')
+    map_embed_url = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'app_settings'
+
+    def __str__(self):
+        return f"AppSettings (updated {self.updated_at})"

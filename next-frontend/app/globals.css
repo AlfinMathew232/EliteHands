@@ -1,0 +1,215 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-poppins);
+}
+
+/* Custom animations */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideLeft {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideRight {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Animation utility classes */
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease-in-out;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.5s ease-in-out;
+}
+
+.animate-slide-left {
+  animation: slideLeft 0.5s ease-in-out;
+}
+
+.animate-slide-right {
+  animation: slideRight 0.5s ease-in-out;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s infinite;
+}
+
+/* Custom utility classes */
+.gradient-text {
+  @apply bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent;
+}
+
+.hover-scale {
+  @apply transition-transform duration-300 hover:scale-105;
+}
+
+.hover-shadow {
+  @apply transition-shadow duration-300 hover:shadow-lg;
+}
+
+.hover-gradient {
+  @apply transition-colors duration-300 hover:from-primary-700 hover:to-secondary-700;
+}
+
+/* Image overlay styles */
+.image-overlay {
+  @apply relative overflow-hidden;
+}
+
+.image-overlay::after {
+  @apply content-[''] absolute inset-0 bg-black opacity-0 transition-opacity duration-300 group-hover:opacity-40;
+}
+
+.image-overlay-content {
+  @apply absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 z-10 group-hover:opacity-100;
+}
+
+/* Scrolling animation classes */
+.reveal {
+  @apply opacity-0 transition-all duration-700;
+}
+
+.reveal.active {
+  @apply opacity-100 transform translate-y-0;
+}
+
+.reveal-up {
+  @apply transform translate-y-20;
+}
+
+.reveal-down {
+  @apply transform -translate-y-20;
+}
+
+.reveal-left {
+  @apply transform translate-x-20;
+}
+
+.reveal-right {
+  @apply transform -translate-x-20;
+}
+
+/* Button styles */
+.btn {
+  @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+}
+
+.btn-primary {
+  @apply bg-primary-600 text-white hover:bg-primary-700 shadow hover:shadow-lg hover:scale-105;
+}
+
+.btn-secondary {
+  @apply bg-secondary-600 text-white hover:bg-secondary-700 shadow hover:shadow-lg hover:scale-105;
+}
+
+.btn-outline {
+  @apply border border-gray-300 dark:border-gray-600 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 hover:scale-105;
+}
+
+.btn-gradient {
+  @apply bg-gradient-to-r from-primary-600 to-secondary-600 text-white shadow hover:shadow-lg hover:scale-105;
+}
+
+/* Card styles */
+.card {
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl;
+}
+
+.card-hover {
+  @apply hover:scale-[1.02] hover:shadow-xl;
+}
+
+/* Input styles */
+.input {
+  @apply block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+}
+
+/* Responsive container */
+.container-custom {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Section spacing */
+.section-padding {
+  @apply py-12 md:py-16 lg:py-24;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Dark mode transitions */
+.dark body {
+  @apply bg-gray-950 text-gray-100;
+}
+
+body {
+  @apply transition-colors duration-300;
+}

@@ -53,8 +53,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 class UserLoginSerializer(serializers.Serializer):
-    """Serializer for user login"""
-    email = serializers.EmailField(required=True)
+    """Serializer for user login (accepts email OR username)"""
+    email = serializers.EmailField(required=False)
+    username = serializers.CharField(required=False)
     password = serializers.CharField(
         write_only=True,
         required=True,
@@ -63,7 +64,19 @@ class UserLoginSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         email = attrs.get('email')
+        username = attrs.get('username')
         password = attrs.get('password')
+
+        if not password:
+            raise serializers.ValidationError('Password is required.', code='authorization')
+
+        # Resolve username to email if only username provided
+        if not email and username:
+            try:
+                user_obj = User.objects.get(username=username)
+                email = user_obj.email
+            except User.DoesNotExist:
+                raise serializers.ValidationError('Unable to log in with provided credentials.', code='authorization')
 
         if email and password:
             user = authenticate(
@@ -75,17 +88,16 @@ class UserLoginSerializer(serializers.Serializer):
             if not user:
                 msg = 'Unable to log in with provided credentials.'
                 raise serializers.ValidationError(msg, code='authorization')
-                
+
             if not user.is_active:
                 msg = 'User account is disabled.'
                 raise serializers.ValidationError(msg, code='authorization')
-                
-            if user.user_type == 'staff' and not user.is_active_staff:
+
+            if user.user_type == 'staff' and not getattr(user, 'is_active_staff', True):
                 msg = 'Staff account is not active.'
                 raise serializers.ValidationError(msg, code='authorization')
-                
         else:
-            msg = 'Must include "email" and "password".'
+            msg = 'Must include "email" or "username" and "password".'
             raise serializers.ValidationError(msg, code='authorization')
 
         attrs['user'] = user
@@ -115,25 +127,16 @@ class OTPVerificationSerializer(serializers.Serializer):
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
     """Serializer for password reset confirmation"""
-    reset_token = serializers.CharField(required=True)
-    new_password = serializers.CharField(
+    token = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(
         required=True,
         write_only=True,
         style={'input_type': 'password'},
         validators=[validate_password]
     )
-    new_password2 = serializers.CharField(
-        required=True,
-        write_only=True,
-        style={'input_type': 'password'}
-    )
     
-    def validate(self, attrs):
-        if attrs['new_password'] != attrs['new_password2']:
-            raise serializers.ValidationError({"new_password": "Password fields didn't match."})
-        return attrs
-        
-    def validate_new_password(self, value):
+    def validate_password(self, value):
         try:
             validate_password(value)
         except DjangoValidationError as e:
